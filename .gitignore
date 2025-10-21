@@ -74,3 +74,6 @@ public
 # Temporary folders
 tmp/
 temp/
+
+# Learning and documentation files
+LEARNING_PATH.md
