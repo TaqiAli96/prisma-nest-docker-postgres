@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_container
+    restart: always
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: nest-app
+    environment:
+      DATABASE_URL: "postgresql://myuser:mypassword@postgres:5432/mydb?schema=public"
+      PORT: 3000
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+        npx prisma migrate dev --name init &&
+        if [ \"$NODE_ENV\" = \"development\" ]; then npm run prisma:seed; fi &&
+        npm run start:dev
+      "
+
+  prisma-studio:
+    build: .
+    container_name: prisma-studio
+    environment:
+      DATABASE_URL: "postgresql://myuser:mypassword@postgres:5432/mydb?schema=public"
+    ports:
+      - "5555:5555"
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app
+    command: npx prisma studio --hostname 0.0.0.0
+
+volumes:
+  postgres_data:
