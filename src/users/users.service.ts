@@ -1,42 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from '../repositories/user/user.repository';
 import { ApiResponseDto } from '../common/dto';
-import { PasswordService } from '../auth/password.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly passwordService: PasswordService,
   ) {}
-
-  async create(createUserDto: CreateUserDto): Promise<ApiResponseDto> {
-    try {
-      // Check if email already exists
-      const existingUser = await this.userRepository.findByEmail(createUserDto.email);
-      if (existingUser) {
-        return ApiResponseDto.error('Email already exists', 409, 'A user with this email already exists');
-      }
-
-      // Hash the password before storing
-      const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
-      
-      // Create user with hashed password
-      const user = await this.userRepository.create({
-        ...createUserDto,
-        password: hashedPassword,
-      });
-
-      // Remove password from response for security
-      const { password, ...userWithoutPassword } = user;
-      
-      return ApiResponseDto.success('User created successfully', userWithoutPassword, 201);
-    } catch (error) {
-      return ApiResponseDto.error('Failed to create user', 400, error.message);
-    }
-  }
 
   async findAll(): Promise<ApiResponseDto> {
     try {
@@ -47,7 +18,7 @@ export class UsersService {
     }
   }
 
-  async findOne(id: number): Promise<ApiResponseDto> {
+  async findOne(id: string): Promise<ApiResponseDto> {
     try {
       const user = await this.userRepository.findOne(id);
       if (!user) {
@@ -59,7 +30,7 @@ export class UsersService {
     }
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<ApiResponseDto> {
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<ApiResponseDto> {
     try {
       const user = await this.userRepository.update(id, updateUserDto);
       return ApiResponseDto.success('User updated successfully', user);
@@ -68,7 +39,7 @@ export class UsersService {
     }
   }
 
-  async remove(id: number): Promise<ApiResponseDto> {
+  async remove(id: string): Promise<ApiResponseDto> {
     try {
       const user = await this.userRepository.remove(id);
       return ApiResponseDto.success('User deleted successfully', user);
@@ -76,5 +47,4 @@ export class UsersService {
       return ApiResponseDto.error('Failed to delete user', 400, error.message);
     }
   }
-
 }

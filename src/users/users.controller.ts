@@ -1,14 +1,10 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,7 +14,6 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiResponseDto } from '../common/dto';
 
@@ -26,17 +21,6 @@ import { ApiResponseDto } from '../common/dto';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
-
-  @Post()
-  @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Create a new user' })
-  @ApiBody({ type: CreateUserDto })
-  @ApiResponse({ status: 201, description: 'User created successfully', type: ApiResponseDto })
-  @ApiResponse({ status: 400, description: 'Bad request', type: ApiResponseDto })
-  @ApiResponse({ status: 409, description: 'Email already exists', type: ApiResponseDto })
-  async create(@Body() createUserDto: CreateUserDto): Promise<ApiResponseDto> {
-    return this.usersService.create(createUserDto);
-  }
 
   @Get()
   @ApiOperation({ summary: 'Get all users' })
@@ -48,32 +32,32 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
-  @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
+  @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
   @ApiResponse({ status: 200, description: 'User found', type: ApiResponseDto })
   @ApiResponse({ status: 404, description: 'User not found', type: ApiResponseDto })
   @ApiResponse({ status: 500, description: 'Internal server error', type: ApiResponseDto })
-  async findOne(@Param('id', ParseIntPipe) id: number): Promise<ApiResponseDto> {
+  async findOne(@Param('id') id: string): Promise<ApiResponseDto> {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update user by ID' })
-  @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
+  @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
   @ApiBody({ type: UpdateUserDto })
   @ApiResponse({ status: 200, description: 'User updated successfully', type: ApiResponseDto })
   @ApiResponse({ status: 400, description: 'Bad request', type: ApiResponseDto })
   @ApiResponse({ status: 404, description: 'User not found', type: ApiResponseDto })
-  async update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto): Promise<ApiResponseDto> {
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<ApiResponseDto> {
     return this.usersService.update(id, updateUserDto);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete user by ID' })
-  @ApiParam({ name: 'id', description: 'User ID', type: 'number' })
+  @ApiParam({ name: 'id', description: 'User ID', type: 'string' })
   @ApiResponse({ status: 200, description: 'User deleted successfully', type: ApiResponseDto })
   @ApiResponse({ status: 400, description: 'Bad request', type: ApiResponseDto })
   @ApiResponse({ status: 404, description: 'User not found', type: ApiResponseDto })
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<ApiResponseDto> {
+  async remove(@Param('id') id: string): Promise<ApiResponseDto> {
     return this.usersService.remove(id);
   }
 }
